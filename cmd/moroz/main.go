@@ -17,8 +17,8 @@ import (
 	"github.com/kolide/kit/version"
 	"github.com/oklog/run"
 
-	"github.com/groob/moroz/moroz"
-	"github.com/groob/moroz/santaconfig"
+	"moroz/moroz"
+	"moroz/santaconfig"
 )
 
 const openSSLBash = `
