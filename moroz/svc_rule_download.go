@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"moroz/santa"
+
 	"github.com/go-kit/kit/endpoint"
-	"github.com/groob/moroz/santa"
 )
 
 func (svc *SantaService) RuleDownload(ctx context.Context, machineID string) ([]santa.Rule, error) {

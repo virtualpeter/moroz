@@ -8,8 +8,9 @@ import (
 	"strings"
 	"sync"
 
+	"moroz/santa"
+
 	"github.com/BurntSushi/toml"
-	"github.com/groob/moroz/santa"
 	"github.com/pkg/errors"
 )
 
