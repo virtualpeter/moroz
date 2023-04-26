@@ -4,6 +4,12 @@ enable_bundles = false
 enabled_transitive_rules = false
 batch_size = 128
 full_sync_interval = 600
+# global.toml example
+#
+enable_bundles = false
+enabled_transitive_rules = false
+batch_size = 128
+full_sync_interval = 600
 client_mode = "MONITOR"
 # allowed_path_regex = "^(?:/Users)/.*"
 # blocked_path_regex = "^(?:/Users)/.*"

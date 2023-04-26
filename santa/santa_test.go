@@ -10,6 +10,7 @@ import (
 
 func TestConfigMarshalUnmarshal(t *testing.T) {
 	conf := testConfig(t, "testdata/config_a.golden.toml", (os.Getenv("REPLACE_GOLDEN") == "TRUE"))
+	conf := testConfig(t, "testdata/config_a.golden.toml", (os.Getenv("REPLACE_GOLDEN") == "TRUE"))
 
 	if have, want := conf.ClientMode, Lockdown; have != want {
 		t.Errorf("have client_mode %d, want %d\n", have, want)
@@ -29,6 +30,9 @@ func TestConfigMarshalUnmarshal(t *testing.T) {
 
 	if have, want := conf.Rules[0].RuleType, Binary; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[0].Policy, Blocklist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 	if have, want := conf.Rules[0].Policy, Blocklist; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
@@ -67,6 +71,7 @@ func testConfig(t *testing.T, path string, replace bool) Config {
 	t.Helper()
 
 	file, err := os.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("loading config from path %q, err = %q\n", path, err)
 	}
@@ -82,6 +87,7 @@ func testConfig(t *testing.T, path string, replace bool) Config {
 	}
 
 	if replace {
+		if err := os.WriteFile(path, buf.Bytes(), os.ModePerm); err != nil {
 		if err := os.WriteFile(path, buf.Bytes(), os.ModePerm); err != nil {
 			t.Fatalf("replace config at path %q, err = %q\n", path, err)
 		}
