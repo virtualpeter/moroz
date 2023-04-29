@@ -20,31 +20,41 @@ type Config struct {
 type Rule struct {
 	RuleType      RuleType `json:"rule_type" toml:"rule_type"`
 	Policy        Policy   `json:"policy" toml:"policy"`
-	SHA256        string   `json:"sha256" toml:"sha256"`
+	SHA256        string   `json:"sha256,omitempty" toml:"sha256,omitempty"`
+	Identifier    string   `json:"identifier,omitempty" toml:"identifier,omitempty"`
 	CustomMessage string   `json:"custom_msg,omitempty" toml:"custom_msg,omitempty"`
 }
 
 // Preflight representssync response sent to a Santa client by the sync server.
 type Preflight struct {
-	ClientMode                    ClientMode `json:"client_mode" toml:"client_mode"`
-	BlocklistRegex                string     `json:"blocklist_regex" toml:"blocklist_regex"`
-	AllowlistRegex                string     `json:"allowlist_regex" toml:"allowlist_regex"`
-	BatchSize                     int        `json:"batch_size" toml:"batch_size"`
-	EnableBundles                 bool       `json:"enable_bundles" toml:"enable_bundles"`
-	EnabledTransitiveAllowlisting bool       `json:"enabled_transitive_allowlisting" toml:"enabled_transitive_allowlisting"`
+	EnableBundles          bool       `json:"enable_bundles" toml:"enable_bundles"`
+	EnabledTransitiveRules bool       `json:"enabled_transitive_rules" toml:"enabled_transitive_rules"`
+	BatchSize              int        `json:"batch_size" toml:"batch_size"`
+	FullSyncInterval       int        `json:"full_sync_interval" toml:"full_sync_interval"`
+	ClientMode             ClientMode `json:"client_mode" toml:"client_mode"`
+	AllowedPathRegex       string     `json:"allowed_path_regex" toml:"allowed_path_regex"`
+	BlockedPathRegex       string     `json:"blocked_path_regex" toml:"blocked_path_regex"`
+	BlockUsbMount          bool       `json:"block_usb_mount" toml:"block_usb_mount"`
+	RemountUSBMode         string     `json:"remount_usb_mode" toml:"remount_usb_mode"`
+	CleanSync              bool       `json:"clean_sync" toml:"clean_sync"`
 }
 
 // A PreflightPayload represents the request sent by a santa client to the sync server.
 type PreflightPayload struct {
-	OSBuild              string     `json:"os_build"`
-	SantaVersion         string     `json:"santa_version"`
+	SerialNumber         string     `json:"serial_num"`
 	Hostname             string     `json:"hostname"`
 	OSVersion            string     `json:"os_version"`
-	CertificateRuleCount int        `json:"certificate_rule_count"`
-	BinaryRuleCount      int        `json:"binary_rule_count"`
-	ClientMode           ClientMode `json:"client_mode"`
-	SerialNumber         string     `json:"serial_num"`
+	OSBuild              string     `json:"os_build"`
+	ModelIdentifier      string     `json:"model_identifier"`
+	SantaVersion         string     `json:"santa_version"`
 	PrimaryUser          string     `json:"primary_user"`
+	BinaryRuleCount      int        `json:"binary_rule_count"`
+	CertificateRuleCount int        `json:"certificate_rule_count"`
+	CompilerRuleCount    int        `json:"compiler_rule_count"`
+	TransitiveRuleCount  int        `json:"transitive_rule_count"`
+	TeamIDRuleCount      int        `json:"teamid_rule_count"`
+	ClientMode           ClientMode `json:"client_mode"`
+	CleanSync            bool       `json:"clean_sync"`
 }
 
 // EventPayload represents derived metadata for events uploaded with the UploadEvent endpoint.
@@ -65,6 +75,9 @@ const (
 	// This is a powerful rule type that has a much broader reach than an individual binary rule .
 	// A signing certificate can sign any number of binaries.
 	Certificate
+
+	// TeamID rules use the 10 digit apple Developer identifier
+	TeamID
 )
 
 func (r *RuleType) UnmarshalText(text []byte) error {
@@ -73,6 +86,8 @@ func (r *RuleType) UnmarshalText(text []byte) error {
 		*r = Binary
 	case "CERTIFICATE":
 		*r = Certificate
+	case "TEAMID":
+		*r = TeamID
 	default:
 		return errors.Errorf("unknown rule_type value %q", t)
 	}
@@ -85,6 +100,8 @@ func (r RuleType) MarshalText() ([]byte, error) {
 		return []byte("BINARY"), nil
 	case Certificate:
 		return []byte("CERTIFICATE"), nil
+	case TeamID:
+		return []byte("TEAMID"), nil
 	default:
 		return nil, errors.Errorf("unknown rule_type %d", r)
 	}

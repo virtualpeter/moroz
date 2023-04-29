@@ -1,0 +1,34 @@
+enable_bundles = false
+enabled_transitive_rules = true
+batch_size = 100
+full_sync_interval = 600
+client_mode = "LOCKDOWN"
+allowed_path_regex = "^(?:/Users)/.*"
+blocked_path_regex = "^(?:/Users)/.*"
+block_usb_mount = false
+remount_usb_mode = "rdonly"
+clean_sync = true
+
+[[rules]]
+  rule_type = "BINARY"
+  policy = "BLOCKLIST"
+  sha256 = "2dc104631939b4bdf5d6bccab76e166e37fe5e1605340cf68dab919df58b8eda"
+  custom_msg = "blocklist firefox"
+
+[[rules]]
+  rule_type = "CERTIFICATE"
+  policy = "ALLOWLIST"
+  sha256 = "e7726cf87cba9e25139465df5bd1557c8a8feed5c7dd338342d8da0959b63c8d"
+  custom_msg = "blocklist dash app certificate"
+
+[[rules]]
+  rule_type = "BINARY"
+  policy = "ALLOWLIST_COMPILER"
+  sha256 = "60d79d1763fefb56716e4a36284300523eb4335c3726fb9070fa83074b02279e"
+  custom_msg = "allowlist go compiler component"
+
+[[rules]]
+  rule_type = "TEAMID"
+  policy = "ALLOWLIST"
+  identifier = "1234567890"
+  custom_msg = "allow by teamid"

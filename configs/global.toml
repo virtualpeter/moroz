@@ -1,42 +1,36 @@
-client_mode = "MONITOR"
-# blocklist_regex = "^(?:/Users)/.*"
-# allowlist_regex = "^(?:/Users)/.*"
-batch_size = 100
+# global.toml example
+#
 enable_bundles = false
-enabled_transitive_allowlisting = true
+enabled_transitive_rules = false
+batch_size = 128
+full_sync_interval = 600
+client_mode = "MONITOR"
+# allowed_path_regex = "^(?:/Users)/.*"
+# blocked_path_regex = "^(?:/Users)/.*"
+block_usb_mount = false
+# remount_usb_mode = "rdonly"
+# clean_sync = true
+
+
+# Example Rules:
+# i chose Prime Video just because its not likely to break anyones workflow if you accidentally publish these rules in your own env
+# unless of course you're the macadmin for amazon. in which case, sorry.
+#
+
+# [[rules]]
+# rule_type = "BINARY"
+# policy = "ALLOWLIST"
+# sha256 = "264924e1f16c7051fe074e3d99ce1685d3ec9d82667ef469b632fc29141e33c6"
+# custom_msg = "binary - Prime Video.app"
+
+# [[rules]]
+# rule_type = "CERTIFICATE"
+# policy = "ALLOWLIST"
+# sha256 = "ac7147809c6464989b0657ac0c646d8043280776fe588ba4bca71f1797003d57"
+# custom_msg = "certificate - Amazon"
 
 [[rules]]
-rule_type = "BINARY"
+rule_type = "TEAMID"
 policy = "BLOCKLIST"
-sha256 = "2dc104631939b4bdf5d6bccab76e166e37fe5e1605340cf68dab919df58b8eda"
-custom_msg = "blocklist firefox"
-
-[[rules]]
-rule_type = "CERTIFICATE"
-policy = "BLOCKLIST"
-sha256 = "e7726cf87cba9e25139465df5bd1557c8a8feed5c7dd338342d8da0959b63c8d"
-custom_msg = "blocklist dash app certificate"
-
-[[rules]]
-rule_type = "BINARY"
-policy = "ALLOWLIST_COMPILER"
-sha256 = "60d79d1763fefb56716e4a36284300523eb4335c3726fb9070fa83074b02279e"
-custom_msg = "allowlist go compiler component"
-
-[[rules]]
-rule_type = "BINARY"
-policy = "ALLOWLIST_COMPILER"
-sha256 = "8e78770685d51324b78588fddc6afc2f8b6cef5231c27eeb97363cc437fec18a"
-custom_msg = "allowlist go compiler component"
-
-[[rules]]
-rule_type = "BINARY"
-policy = "ALLOWLIST_COMPILER"
-sha256 = "e88617cfd62809fb10e213c459a52f48e028fae4321e41134c4797465af886b6"
-custom_msg = "allowlist go compiler component"
-
-[[rules]]
-rule_type = "BINARY"
-policy = "ALLOWLIST_COMPILER"
-sha256 = "d867fca68bbd7db18e9ced231800e7535bc067852b1e530987bb7f57b5e3a02c"
-custom_msg = "allowlist go compiler component"
+identifier = "94KV3E626L"
+custom_msg = "teamid - Amazon Apps"

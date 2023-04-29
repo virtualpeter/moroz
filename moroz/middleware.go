@@ -1,7 +1,7 @@
 package moroz
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 )
 
 type Middleware func(Service) Service

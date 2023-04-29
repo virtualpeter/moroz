@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"moroz/santa"
+
 	"github.com/go-kit/kit/endpoint"
-	"github.com/groob/moroz/santa"
 )
 
 func (svc *SantaService) Preflight(ctx context.Context, machineID string, p santa.PreflightPayload) (*santa.Preflight, error) {

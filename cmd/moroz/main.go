@@ -17,8 +17,8 @@ import (
 	"github.com/kolide/kit/version"
 	"github.com/oklog/run"
 
-	"github.com/groob/moroz/moroz"
-	"github.com/groob/moroz/santaconfig"
+	"moroz/moroz"
+	"moroz/santaconfig"
 )
 
 const openSSLBash = `
@@ -37,8 +37,7 @@ And then, add the cert to roots.
 
 
 The latest version of santa is available on the github repo page:
-	https://github.com/google/santa/releases
-`
+	https://github.com/google/santa/releases`
 
 func main() {
 	var (
