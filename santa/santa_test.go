@@ -2,7 +2,6 @@ package santa
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,7 +9,7 @@ import (
 )
 
 func TestConfigMarshalUnmarshal(t *testing.T) {
-	conf := testConfig(t, "testdata/config_a_toml.golden", (os.Getenv("REPLACE_GOLDEN") == "TRUE"))
+	conf := testConfig(t, "testdata/config_a.golden.toml", (os.Getenv("REPLACE_GOLDEN") == "TRUE"))
 
 	if have, want := conf.ClientMode, Lockdown; have != want {
 		t.Errorf("have client_mode %d, want %d\n", have, want)
@@ -30,6 +29,9 @@ func TestConfigMarshalUnmarshal(t *testing.T) {
 
 	if have, want := conf.Rules[0].RuleType, Binary; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[0].Policy, Blocklist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
 	if have, want := conf.Rules[1].RuleType, Certificate; have != want {
@@ -52,19 +54,32 @@ func TestConfigMarshalUnmarshal(t *testing.T) {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[4].Policy, AllowlistCompiler; have != want {
+	if have, want := conf.Rules[2].RuleType, Binary; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[2].Policy, AllowlistCompiler; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[5].Policy, Remove; have != want {
+	if have, want := conf.Rules[3].RuleType, TeamID; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[3].Policy, Allowlist; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
+	if have, want := conf.Rules[3].Identifier, "1234567890"; have != want {
+		t.Errorf("have identifier %s, want %s\n", have, want)
+	}
+	if have, want := conf.Rules[3].CustomMessage, "allow by teamid"; have != want {
+		t.Errorf("have Custom Message %s, want %s\n", have, want)
+	}
+
 }
 
 func testConfig(t *testing.T, path string, replace bool) Config {
 	t.Helper()
 
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("loading config from path %q, err = %q\n", path, err)
 	}
@@ -80,7 +95,7 @@ func testConfig(t *testing.T, path string, replace bool) Config {
 	}
 
 	if replace {
-		if err := ioutil.WriteFile(path, buf.Bytes(), os.ModePerm); err != nil {
+		if err := os.WriteFile(path, buf.Bytes(), os.ModePerm); err != nil {
 			t.Fatalf("replace config at path %q, err = %q\n", path, err)
 		}
 		return testConfig(t, path, false)
