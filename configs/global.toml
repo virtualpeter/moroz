@@ -1,15 +1,15 @@
 # global.toml example
 #
-enable_bundles = false
-enabled_transitive_rules = false
-batch_size = 128
-full_sync_interval = 600
 client_mode = "MONITOR"
+#clean_sync = true
+batch_size = 128
+enable_bundles = false
+enable_transitive_rules = true
+full_sync_interval = 600
 # allowed_path_regex = "^(?:/Users)/.*"
 # blocked_path_regex = "^(?:/Users)/.*"
 block_usb_mount = false
 # remount_usb_mode = "rdonly"
-# clean_sync = true
 
 
 # Example Rules:
