@@ -26,16 +26,18 @@ type Rule struct {
 
 // Preflight representssync response sent to a Santa client by the sync server.
 type Preflight struct {
-	EnableBundles          bool       `json:"enable_bundles" toml:"enable_bundles"`
-	EnabledTransitiveRules bool       `json:"enabled_transitive_rules" toml:"enabled_transitive_rules"`
-	BatchSize              int        `json:"batch_size" toml:"batch_size"`
-	FullSyncInterval       int        `json:"full_sync_interval" toml:"full_sync_interval"`
-	ClientMode             ClientMode `json:"client_mode" toml:"client_mode"`
-	AllowedPathRegex       string     `json:"allowed_path_regex" toml:"allowed_path_regex"`
-	BlockedPathRegex       string     `json:"blocked_path_regex" toml:"blocked_path_regex"`
-	BlockUsbMount          bool       `json:"block_usb_mount" toml:"block_usb_mount"`
-	RemountUSBMode         string     `json:"remount_usb_mode" toml:"remount_usb_mode"`
-	CleanSync              bool       `json:"clean_sync" toml:"clean_sync"`
+	ClientMode            ClientMode `json:"client_mode" toml:"client_mode"`
+	CleanSync             bool       `json:"clean_sync" toml:"clean_sync"`
+	BatchSize             int        `json:"batch_size" toml:"batch_size"`
+	UploadLogsURL         string     `json:"upload_logs_url,omitempty" toml:"upload_logs_url,omitempty"`
+	AllowedPathRegex      string     `json:"allowed_path_regex" toml:"allowed_path_regex"`
+	BlockedPathRegex      string     `json:"blocked_path_regex" toml:"blocked_path_regex"`
+	FullSyncInterval      int        `json:"full_sync_interval" toml:"full_sync_interval"`
+	EnableBundles         bool       `json:"enable_bundles" toml:"enable_bundles"`
+	EnableTransitiveRules bool       `json:"enable_transitive_rules" toml:"enable_transitive_rules"`
+	EnableAllEventUpload  bool       `json:"enable_all_event_upload" toml:"enable_all_event_upload"`
+	BlockUsbMount         bool       `json:"block_usb_mount" toml:"block_usb_mount"`
+	RemountUSBMode        string     `json:"remount_usb_mode" toml:"remount_usb_mode"`
 }
 
 // A PreflightPayload represents the request sent by a santa client to the sync server.

@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log/level"
 	"github.com/gorilla/mux"
 	"github.com/kolide/kit/env"
 	"github.com/kolide/kit/httputil"
@@ -128,8 +128,6 @@ func validateConfigExists(configsPath string) bool {
 	}
 	if _, err := os.Stat(configsPath + "/global.toml"); os.IsNotExist(err) {
 		hasConfig = false
-	}
-	if !hasConfig {
 	}
 	return hasConfig
 }

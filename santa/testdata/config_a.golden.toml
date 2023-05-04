@@ -1,13 +1,14 @@
-enable_bundles = false
-enabled_transitive_rules = true
-batch_size = 100
-full_sync_interval = 600
 client_mode = "LOCKDOWN"
+clean_sync = true
+batch_size = 100
 allowed_path_regex = "^(?:/Users)/.*"
 blocked_path_regex = "^(?:/Users)/.*"
+full_sync_interval = 600
+enable_bundles = false
+enable_transitive_rules = true
+enable_all_event_upload = true
 block_usb_mount = false
 remount_usb_mode = "rdonly"
-clean_sync = true
 
 [[rules]]
   rule_type = "BINARY"
