@@ -18,8 +18,12 @@ import (
 )
 
 func (svc *SantaService) UploadEvent(ctx context.Context, machineID string, events []santa.EventPayload) error {
+	const (
+		layoutDir = "060102"
+	)
+	timeDir := time.Now().Format(layoutDir)
 	for _, ev := range events {
-		eventDir := filepath.Join(svc.eventDir, ev.FileSHA, machineID)
+		eventDir := filepath.Join(svc.eventDir, timeDir, ev.FileSHA, machineID)
 		if err := os.MkdirAll(eventDir, 0700); err != nil {
 			return errors.Wrapf(err, "create event directory %s", eventDir)
 		}
