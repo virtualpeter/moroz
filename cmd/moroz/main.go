@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/kolide/kit/logutil"
 	"github.com/kolide/kit/version"
 	"github.com/oklog/run"
+	"github.com/pkg/errors"
 
 	"moroz/moroz"
 	"moroz/santaconfig"
@@ -41,14 +43,15 @@ The latest version of santa is available on the github repo page:
 
 func main() {
 	var (
-		flTLSCert = flag.String("tls-cert", env.String("MOROZ_TLS_CERT", "server.crt"), "path to TLS certificate")
-		flTLSKey  = flag.String("tls-key", env.String("MOROZ_TLS_KEY", "server.key"), "path to TLS private key")
-		flAddr    = flag.String("http-addr", env.String("MOROZ_HTTP_ADDRESS", ":8080"), "http address ex: -http-addr=:8080")
-		flConfigs = flag.String("configs", env.String("MOROZ_CONFIGS", "../../configs"), "path to config folder")
-		flEvents  = flag.String("event-dir", env.String("MOROZ_EVENT_DIR", "/tmp/santa_events"), "Path to root directory where events will be stored.")
-		flVersion = flag.Bool("version", false, "print version information")
-		flDebug   = flag.Bool("debug", false, "log at a debug level by default.")
-		flUseTLS  = flag.Bool("use-tls", true, "I promise I terminated TLS elsewhere when changing this")
+		flTLSCert      = flag.String("tls-cert", env.String("MOROZ_TLS_CERT", "server.crt"), "path to TLS certificate")
+		flTLSKey       = flag.String("tls-key", env.String("MOROZ_TLS_KEY", "server.key"), "path to TLS private key")
+		flAddr         = flag.String("http-addr", env.String("MOROZ_HTTP_ADDRESS", ":8080"), "http address ex: -http-addr=:8080")
+		flConfigs      = flag.String("configs", env.String("MOROZ_CONFIGS", "../../configs"), "path to config folder")
+		flEvents       = flag.String("event-dir", env.String("MOROZ_EVENT_DIR", "/tmp/santa_events"), "Path to root directory where events will be stored.")
+		flVersion      = flag.Bool("version", false, "print version information")
+		flDebug        = flag.Bool("debug", false, "log at a debug level by default.")
+		flUseTLS       = flag.Bool("use-tls", true, "I promise I terminated TLS elsewhere when changing this")
+		flStreamEvents = flag.Bool("stream-events", false, "write all events to a single file per hour to reduce filesystem io")
 	)
 	flag.Parse()
 
@@ -67,12 +70,21 @@ func main() {
 		os.Exit(2)
 	}
 
+	var eventLogHandle *os.File
+
+	if *flStreamEvents {
+		streamDir := filepath.Join(*flEvents, "stream")
+		if err := os.MkdirAll(streamDir, 0700); err != nil {
+			fmt.Println(errors.Wrapf(err, "create event directory %s", streamDir))
+		}
+	}
+
 	logger := logutil.NewServerLogger(*flDebug)
 
 	repo := santaconfig.NewFileRepo(*flConfigs)
 	var svc moroz.Service
 	{
-		s, err := moroz.NewService(repo, *flEvents)
+		s, err := moroz.NewService(repo, *flEvents, *flStreamEvents, eventLogHandle)
 		if err != nil {
 			logutil.Fatal(logger, err)
 		}

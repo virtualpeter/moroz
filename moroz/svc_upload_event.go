@@ -18,19 +18,39 @@ import (
 )
 
 func (svc *SantaService) UploadEvent(ctx context.Context, machineID string, events []santa.EventPayload) error {
-	const (
-		layoutDir = "060102"
-	)
-	timeDir := time.Now().Format(layoutDir)
-	for _, ev := range events {
-		eventDir := filepath.Join(svc.eventDir, timeDir, ev.FileSHA, machineID)
-		if err := os.MkdirAll(eventDir, 0700); err != nil {
-			return errors.Wrapf(err, "create event directory %s", eventDir)
+
+	if svc.streamEvents {
+
+		eventPath := filepath.Join(svc.eventDir, "stream", fmt.Sprintf("%s.json", time.Now().Format("060102-15")))
+		if svc.eventLogHandle == nil {
+			if _, err := os.Stat(eventPath); err != nil {
+				svc.eventLogHandle, _ = os.OpenFile(eventPath, os.O_RDWR|os.O_CREATE, 0644)
+			} else {
+				svc.eventLogHandle, _ = os.OpenFile(eventPath, os.O_RDWR|os.O_APPEND, 0644)
+			}
+		} else {
+			if svc.eventLogHandle.Name() != eventPath {
+				svc.eventLogHandle.Close()
+				svc.eventLogHandle, _ = os.OpenFile(eventPath, os.O_RDWR|os.O_CREATE, 0644)
+			}
 		}
 
-		eventPath := filepath.Join(eventDir, fmt.Sprintf("%f.json", ev.UnixTime))
-		if err := ioutil.WriteFile(eventPath, ev.Content, 0644); err != nil {
-			return errors.Wrapf(err, "write event to path %s", eventPath)
+		for _, ev := range events {
+			fmt.Fprintf(svc.eventLogHandle, "%v\n", string(ev.Content))
+		}
+
+	} else {
+		timeDir := time.Now().Format("060102")
+		for _, ev := range events {
+			eventDir := filepath.Join(svc.eventDir, timeDir, ev.FileSHA, machineID)
+			if err := os.MkdirAll(eventDir, 0700); err != nil {
+				return errors.Wrapf(err, "create event directory %s", eventDir)
+			}
+
+			eventPath := filepath.Join(eventDir, fmt.Sprintf("%f.json", ev.UnixTime))
+			if err := ioutil.WriteFile(eventPath, ev.Content, 0644); err != nil {
+				return errors.Wrapf(err, "write event to path %s", eventPath)
+			}
 		}
 	}
 	return nil
