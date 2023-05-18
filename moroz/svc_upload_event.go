@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
@@ -36,7 +37,7 @@ func (svc *SantaService) UploadEvent(ctx context.Context, machineID string, even
 		}
 
 		for _, ev := range events {
-			fmt.Fprintf(svc.eventLogHandle, "%v\n", string(ev.Content))
+			fmt.Fprintf(svc.eventLogHandle, "%v\n", garnishEvent(ev, machineID))
 		}
 
 	} else {
@@ -54,6 +55,16 @@ func (svc *SantaService) UploadEvent(ctx context.Context, machineID string, even
 		}
 	}
 	return nil
+}
+
+// if machineid isnt present in event payload add it in.
+func garnishEvent(ev santa.EventPayload, machineID string) string {
+	buf := string(ev.Content)
+
+	if !strings.Contains(buf, "machineid") {
+		buf = buf[:len(buf)-1] + ",\"machineid\":\"" + machineID + "\"}"
+	}
+	return buf
 }
 
 type eventRequest struct {
