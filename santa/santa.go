@@ -20,8 +20,7 @@ type Config struct {
 type Rule struct {
 	RuleType      RuleType `json:"rule_type" toml:"rule_type"`
 	Policy        Policy   `json:"policy" toml:"policy"`
-	SHA256        string   `json:"sha256,omitempty" toml:"sha256,omitempty"`
-	Identifier    string   `json:"identifier,omitempty" toml:"identifier,omitempty"`
+	Identifier    string   `json:"identifier" toml:"identifier"`
 	CustomMessage string   `json:"custom_msg,omitempty" toml:"custom_msg,omitempty"`
 }
 
@@ -76,8 +75,16 @@ const (
 	// A signing certificate can sign any number of binaries.
 	Certificate
 
-	// TeamID rules use the 10 digit apple Developer identifier
+	// TeamID rules are the 10-character identifier issued by Apple and tied to developer accounts/organizations.
+	// This is an even more powerful rule with broader reach than individual certificate rules.
+	// ie. EQHXZ8M8AV for Google
 	TeamID
+
+	// Signing IDs are arbitrary identifiers under developer control that are given to a binary at signing time.
+	// Because the signing IDs are arbitrary, the Santa rule identifier must be prefixed with the Team ID associated
+	// with the Apple developer certificate used to sign the application.
+	// ie. EQHXZ8M8AV:com.google.Chrome
+	SigningID
 )
 
 func (r *RuleType) UnmarshalText(text []byte) error {
@@ -88,6 +95,8 @@ func (r *RuleType) UnmarshalText(text []byte) error {
 		*r = Certificate
 	case "TEAMID":
 		*r = TeamID
+	case "SIGNINGID":
+		*r = SigningID
 	default:
 		return errors.Errorf("unknown rule_type value %q", t)
 	}
@@ -102,6 +111,8 @@ func (r RuleType) MarshalText() ([]byte, error) {
 		return []byte("CERTIFICATE"), nil
 	case TeamID:
 		return []byte("TEAMID"), nil
+	case SigningID:
+		return []byte("SIGNINGID"), nil
 	default:
 		return nil, errors.Errorf("unknown rule_type %d", r)
 	}
@@ -117,6 +128,7 @@ const (
 	// AllowlistCompiler is a Transitive allowlist policy which allows allowlisting binaries created by
 	// a specific compiler. EnabledTransitiveAllowlisting must be set to true in the Preflight first.
 	AllowlistCompiler
+	Remove
 )
 
 func (p *Policy) UnmarshalText(text []byte) error {
@@ -127,6 +139,8 @@ func (p *Policy) UnmarshalText(text []byte) error {
 		*p = Allowlist
 	case "ALLOWLIST_COMPILER":
 		*p = AllowlistCompiler
+	case "REMOVE":
+		*p = Remove
 	default:
 		return errors.Errorf("unknown policy value %q", t)
 	}
@@ -141,6 +155,8 @@ func (p Policy) MarshalText() ([]byte, error) {
 		return []byte("ALLOWLIST"), nil
 	case AllowlistCompiler:
 		return []byte("ALLOWLIST_COMPILER"), nil
+	case Remove:
+		return []byte("REMOVE"), nil
 	default:
 		return nil, errors.Errorf("unknown policy %d", p)
 	}
