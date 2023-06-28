@@ -34,43 +34,55 @@ func TestConfigMarshalUnmarshal(t *testing.T) {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[1].RuleType, Certificate; have != want {
+	if have, want := conf.Rules[1].RuleType, TeamID; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
+	if have, want := conf.Rules[1].Policy, Allowlist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
+	}
 
-	if have, want := conf.Rules[2].RuleType, TeamID; have != want {
-		t.Errorf("have rule_tpe %d, want %d\n", have, want)
+	if have, want := conf.Rules[2].RuleType, SigningID; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[2].Policy, Allowlist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
 	if have, want := conf.Rules[3].RuleType, SigningID; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
-
-	if have, want := conf.Rules[0].Policy, Blocklist; have != want {
+	if have, want := conf.Rules[3].Policy, Blocklist; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[1].Policy, Allowlist; have != want {
-		t.Errorf("have policy %d, want %d\n", have, want)
-	}
-
-	if have, want := conf.Rules[2].RuleType, Binary; have != want {
+	if have, want := conf.Rules[4].RuleType, Binary; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
-	if have, want := conf.Rules[2].Policy, AllowlistCompiler; have != want {
+	if have, want := conf.Rules[4].Policy, AllowlistCompiler; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[3].RuleType, TeamID; have != want {
+	if have, want := conf.Rules[5].RuleType, Binary; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
-	if have, want := conf.Rules[3].Policy, Allowlist; have != want {
+	if have, want := conf.Rules[5].Policy, AllowlistCompiler; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
-	if have, want := conf.Rules[3].Identifier, "1234567890"; have != want {
+
+	if have, want := conf.Rules[6].RuleType, Binary; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[6].Policy, AllowlistCompiler; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
+	}
+
+	if have, want := conf.Rules[7].Policy, AllowlistCompiler; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[7].Identifier, "d867fca68bbd7db18e9ced231800e7535bc067852b1e530987bb7f57b5e3a02c"; have != want {
 		t.Errorf("have identifier %s, want %s\n", have, want)
 	}
-	if have, want := conf.Rules[3].CustomMessage, "allow by teamid"; have != want {
+	if have, want := conf.Rules[7].CustomMessage, "allowlist go compiler component"; have != want {
 		t.Errorf("have Custom Message %s, want %s\n", have, want)
 	}
 
