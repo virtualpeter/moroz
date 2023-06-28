@@ -41,9 +41,8 @@ func (svc *SantaService) UploadEvent(ctx context.Context, machineID string, even
 		}
 
 	} else {
-		timeDir := time.Now().Format("060102")
 		for _, ev := range events {
-			eventDir := filepath.Join(svc.eventDir, timeDir, ev.FileSHA, machineID)
+			eventDir := filepath.Join(svc.eventDir, ev.FileSHA, machineID)
 			if err := os.MkdirAll(eventDir, 0700); err != nil {
 				return errors.Wrapf(err, "create event directory %s", eventDir)
 			}
