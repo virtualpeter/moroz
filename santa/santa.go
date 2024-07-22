@@ -15,6 +15,8 @@ type Config struct {
 	Rules []Rule `toml:"rules"`
 }
 
+type DeviceMap map[string]string
+
 // Rule is a Santa rule.
 // Full documentation: https://github.com/google/santa/blob/01df4623c7c534568ca3d310129455ff71cc3eef/Docs/details/rules.md
 type Rule struct {

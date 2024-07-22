@@ -2,7 +2,6 @@ package santaconfig
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,12 +51,22 @@ func (f *FileRepo) Config(ctx context.Context, machineID string) (santa.Config, 
 	defer f.mtx.Unlock()
 
 	var conf santa.Config
+	var class string
 	configs, err := loadConfigs(f.configPath)
 	if err != nil {
 		return conf, errors.Wrapf(err, "loading config for machineID %q", machineID)
 	}
+	deviceMap, err := loadDeviceMaps(f.configPath)
+	if err != nil {
+		return conf, errors.Wrapf(err, "loading machineID to class map %q", machineID)
+	}
 	f.updateIndex(configs)
-	conf, ok := f.configIndex[machineID]
+	if deviceMap[machineID] != "" {
+		class = deviceMap[machineID]
+	} else {
+		class = machineID
+	}
+	conf, ok := f.configIndex[class]
 	if !ok {
 		return conf, errors.Errorf("configuration %q not found", machineID)
 	}
@@ -66,29 +75,62 @@ func (f *FileRepo) Config(ctx context.Context, machineID string) (santa.Config, 
 
 func loadConfigs(path string) ([]santa.Config, error) {
 	var configs []santa.Config
+
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(info.Name()) != ".toml" {
-			return nil
-		}
-		file, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			var conf santa.Config
-			err := toml.Unmarshal(file, &conf)
+		switch filepath.Ext(info.Name()) {
+		case ".toml":
+			file, err := os.ReadFile(path)
 			if err != nil {
-				return errors.Wrapf(err, "failed to decode %v, skipping \n", info.Name())
+				return err
 			}
-			name := info.Name()
-			conf.MachineID = strings.TrimSuffix(name, filepath.Ext(name))
-			configs = append(configs, conf)
-			return nil
+			if !info.IsDir() {
+				var conf santa.Config
+				err := toml.Unmarshal(file, &conf)
+				if err != nil {
+					return errors.Wrapf(err, "failed to decode %v, skipping \n", info.Name())
+				}
+				name := info.Name()
+				conf.MachineID = strings.TrimSuffix(name, filepath.Ext(name))
+				configs = append(configs, conf)
+				return nil
+			}
 		}
 		return nil
 	})
 	return configs, errors.Wrapf(err, "loading configs from path")
+}
+
+func loadDeviceMaps(path string) (santa.DeviceMap, error) {
+	deviceList := make(santa.DeviceMap)
+	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		switch filepath.Ext(info.Name()) {
+		case ".csv":
+			//class lists
+			file, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				name := info.Name()
+				class := strings.TrimSuffix(name, filepath.Ext(name))
+
+				if err != nil {
+					return err
+				}
+				devices := strings.Fields(string(file))
+				for _, word := range devices {
+					deviceList[word] = class
+				}
+				return nil
+			}
+		}
+		return nil
+	})
+	return deviceList, errors.Wrapf(err, "loading device maps from path")
 }
