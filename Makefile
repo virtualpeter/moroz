@@ -66,7 +66,7 @@ moroz: .pre-build .pre-moroz
 
 xp-moroz: .pre-build .pre-moroz
 	GOOS=darwin go build -o build/darwin/moroz -ldflags ${BUILD_VERSION} ./cmd/moroz
-	GOOS=linux CGO_ENABLED=0 go build -o build/linux/moroz  -ldflags ${BUILD_VERSION} ./cmd/moroz
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o build/linux/moroz  -ldflags ${BUILD_VERSION} ./cmd/moroz
 
 install: .pre-moroz
 	go install -ldflags ${BUILD_VERSION} ./cmd/moroz
@@ -75,7 +75,7 @@ release-zip: xp-moroz
 	zip -r moroz_${VERSION}.zip build/
 
 docker-build:
-	GOOS=linux CGO_ENABLED=0 go build -o build/linux/moroz  -ldflags ${BUILD_VERSION} ./cmd/moroz
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o build/linux/moroz  -ldflags ${BUILD_VERSION} ./cmd/moroz
 	docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
 
 docker-tag: docker-build
