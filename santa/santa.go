@@ -126,7 +126,8 @@ func (r RuleType) MarshalText() ([]byte, error) {
 type Policy int
 
 const (
-	Blocklist Policy = iota
+	Blocklist       Policy = iota
+	SilentBlocklist Policy = iota
 	Allowlist
 
 	// AllowlistCompiler is a Transitive allowlist policy which allows allowlisting binaries created by
@@ -139,6 +140,8 @@ func (p *Policy) UnmarshalText(text []byte) error {
 	switch t := string(text); t {
 	case "BLOCKLIST":
 		*p = Blocklist
+	case "SILENT_BLOCKLIST":
+		*p = SilentBlocklist
 	case "ALLOWLIST":
 		*p = Allowlist
 	case "ALLOWLIST_COMPILER":
@@ -155,6 +158,8 @@ func (p Policy) MarshalText() ([]byte, error) {
 	switch p {
 	case Blocklist:
 		return []byte("BLOCKLIST"), nil
+	case SilentBlocklist:
+		return []byte("SILENT_BLOCKLIST"), nil
 	case Allowlist:
 		return []byte("ALLOWLIST"), nil
 	case AllowlistCompiler:
