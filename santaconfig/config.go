@@ -120,9 +120,6 @@ func loadDeviceMaps(path string) (santa.DeviceMap, error) {
 				name := info.Name()
 				class := strings.TrimSuffix(name, filepath.Ext(name))
 
-				if err != nil {
-					return err
-				}
 				devices := strings.Fields(string(file))
 				for _, word := range devices {
 					deviceList[word] = class
