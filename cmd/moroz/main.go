@@ -6,19 +6,21 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log/level"
 	"github.com/gorilla/mux"
 	"github.com/kolide/kit/env"
 	"github.com/kolide/kit/httputil"
 	"github.com/kolide/kit/logutil"
 	"github.com/kolide/kit/version"
 	"github.com/oklog/run"
+	"github.com/pkg/errors"
 
-	"github.com/groob/moroz/moroz"
-	"github.com/groob/moroz/santaconfig"
+	"moroz/moroz"
+	"moroz/santaconfig"
 )
 
 const openSSLBash = `
@@ -37,8 +39,7 @@ And then, add the cert to roots.
 
 
 The latest version of santa is available on the github repo page:
-	https://github.com/google/santa/releases
-`
+	https://github.com/google/santa/releases`
 
 func main() {
 	var (
@@ -51,6 +52,7 @@ func main() {
 		flVersion       = flag.Bool("version", false, "print version information")
 		flDebug         = flag.Bool("debug", false, "log at a debug level by default.")
 		flUseTLS        = flag.Bool("use-tls", true, "I promise I terminated TLS elsewhere when changing this")
+		flStreamEvents  = flag.Bool("stream-events", false, "write all events to a single file per hour to reduce filesystem io")
 	)
 	flag.Parse()
 
@@ -69,12 +71,21 @@ func main() {
 		os.Exit(2)
 	}
 
+	var eventLogHandle *os.File
+
+	if *flStreamEvents {
+		streamDir := filepath.Join(*flEvents, "stream")
+		if err := os.MkdirAll(streamDir, 0700); err != nil {
+			fmt.Println(errors.Wrapf(err, "create event directory %s", streamDir))
+		}
+	}
+
 	logger := logutil.NewServerLogger(*flDebug)
 
 	repo := santaconfig.NewFileRepo(*flConfigs)
 	var svc moroz.Service
 	{
-		s, err := moroz.NewService(repo, *flEvents, *flPersistEvents)
+		s, err := moroz.NewService(repo, *flEvents, *flPersistEvents, *flStreamEvents, eventLogHandle)
 		if err != nil {
 			logutil.Fatal(logger, err)
 		}
@@ -130,8 +141,6 @@ func validateConfigExists(configsPath string) bool {
 	}
 	if _, err := os.Stat(configsPath + "/global.toml"); os.IsNotExist(err) {
 		hasConfig = false
-	}
-	if !hasConfig {
 	}
 	return hasConfig
 }

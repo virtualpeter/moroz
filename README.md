@@ -20,10 +20,18 @@ Moroz expects a `global.toml` file which contains a list of rules. The `global` 
 Below is a sample configuration file:
 
 ```toml
+#global.toml example
+#
+enable_bundles = false
+enabled_transitive_rules = false
+batch_size = 128
+full_sync_interval = 600
 client_mode = "MONITOR"
-#blocklist_regex = "^(?:/Users)/.*"
-#allowlist_regex = "^(?:/Users)/.*"
-batch_size = 100
+allowed_path_regex = "^(?:/Applications)/.*"
+# blocked_path_regex = "^(?:/Users)/.*"
+# block_usb_mount = false
+# remount_usb_mode = "rdonly"
+# clean_sync = true
 
 [[rules]]
 rule_type = "BINARY"
@@ -78,6 +86,11 @@ The commands below assume you have `$GOPATH/bin` in your path.
 
 ```bash
 cd cmd/moroz; go build
+
+or just,
+
+make
+
 ```
 
 # Run

@@ -1,12 +1,15 @@
+# global.toml example
+#
 client_mode = "MONITOR"
-# blocked_path_regex = "^(?:/Users)/.*"
-# allowed_path_regex = "^(?:/Users)/.*"
-batch_size = 100
+#clean_sync = true
+batch_size = 128
 enable_all_event_upload = true
 enable_bundles = false
 enable_transitive_rules = true
-clean_sync = true
 full_sync_interval = 600
+# blocked_path_regex = "^(?:/Users)/.*"
+# allowed_path_regex = "^(?:/Users)/.*"
+clean_sync = true
 
 [[rules]]
 rule_type = "BINARY"
