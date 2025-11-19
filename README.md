@@ -2,7 +2,7 @@
 <img src="moroz.png" alt="moroz"/><br/>
 </p>
 
-Moroz is a server for the [Santa](https://github.com/google/santa) project.
+Moroz is a server for the [Santa](https://github.com/northpolesec/santa) project.
 
 > Santa is a binary allowlisting/blocklisting system for macOS. It consists of a kernel extension that monitors for executions, a userland daemon that makes execution decisions based on the contents of a SQLite database, a GUI agent that notifies the user in case of a block decision and a command-line utility for managing the system and synchronizing the database with a server.
 >
@@ -15,15 +15,23 @@ See this [short video](https://www.youtube.com/watch?v=3w3_bcJYWj0) for a demo.
 Moroz uses [TOML](https://github.com/toml-lang/toml#example) rule files to specify configuration for Santa.
 The path to the folder with the configurations can be specified with `-configs /path/to/configs`.
 
-Moroz expects a `global.toml` file which contains a list of rules. The `global` config can be overriden by providing a machine specific config. To do so, name the file for each host with the Santa `machine id` [configuration parameter](https://github.com/google/santa/wiki/Configuration#keys-to-be-used-with-a-tls-server). By default, this is the hardware UUID of the mac.
+Moroz expects a `global.toml` file which contains a list of rules. The `global` config can be overriden by providing a machine specific config. To do so, name the file for each host with the Santa `machine id` [configuration parameter](https://northpole.dev/configuration/keys/#MachineID). By default, this is the hardware UUID of the mac.
 
 Below is a sample configuration file:
 
 ```toml
+#global.toml example
+#
+enable_bundles = false
+enabled_transitive_rules = false
+batch_size = 128
+full_sync_interval = 600
 client_mode = "MONITOR"
-#blocklist_regex = "^(?:/Users)/.*"
-#allowlist_regex = "^(?:/Users)/.*"
-batch_size = 100
+allowed_path_regex = "^(?:/Applications)/.*"
+# blocked_path_regex = "^(?:/Users)/.*"
+# block_usb_mount = false
+# remount_usb_mode = "rdonly"
+# clean_sync = true
 
 [[rules]]
 rule_type = "BINARY"
@@ -78,6 +86,11 @@ The commands below assume you have `$GOPATH/bin` in your path.
 
 ```bash
 cd cmd/moroz; go build
+
+or just,
+
+make
+
 ```
 
 # Run
@@ -128,10 +141,10 @@ Add the self-signed cert to your system roots.
 ```
 
 ## Install Santa:
-The latest version of Santa is available on the GitHub repo page: https://github.com/google/santa/releases
+The latest version of Santa is available on the [GitHub release page](https://github.com/northpolesec/santa/releases)
 
 ## Configure Santa:
-You will need to provide the `SyncBaseURL` settings. See the [Santa repo](https://github.com/google/santa/blob/01df4623c7c534568ca3d310129455ff71cc3eef/Docs/deployment/configuration.md#important) for a complete guide on all the client configuration options.
+You will need to provide the `SyncBaseURL` settings. See the [Documentation](https://northpole.dev/configuration/keys/#SyncBaseURL) for a complete guide on all the client configuration options.
 
 ## Start moroz:
 Assumes you have the `./server.crt` and `./server.key` files.

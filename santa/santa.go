@@ -2,6 +2,8 @@
 package santa
 
 import (
+	"encoding/json"
+
 	"github.com/pkg/errors"
 )
 
@@ -13,8 +15,10 @@ type Config struct {
 	Rules []Rule `toml:"rules"`
 }
 
+type DeviceMap map[string]string
+
 // Rule is a Santa rule.
-// https://github.com/google/santa/blob/ff0efe952b2456b52fad2a40e6eedb0931e6bdf7/docs/development/sync-protocol.md#rules-objects
+// https://github.com/northpolesec/santa/blob/ff0efe952b2456b52fad2a40e6eedb0931e6bdf7/docs/development/sync-protocol.md#rules-objects
 type Rule struct {
 	RuleType      RuleType `json:"rule_type" toml:"rule_type"`
 	Policy        Policy   `json:"policy" toml:"policy"`
@@ -28,27 +32,24 @@ type Rule struct {
 }
 
 // Preflight represents sync response sent to a Santa client by the sync server.
-// https://github.com/google/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#preflight-response
+// https://github.com/northpolesec/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#preflight-response
 type Preflight struct {
 	ClientMode            ClientMode `json:"client_mode" toml:"client_mode"`
-	BlockedPathRegex      string     `json:"blocked_path_regex" toml:"blocked_path_regex"`
-	AllowedPathRegex      string     `json:"allowed_path_regex" toml:"allowed_path_regex"`
+	CleanSync             bool       `json:"clean_sync" toml:"clean_sync"`
 	BatchSize             int        `json:"batch_size" toml:"batch_size"`
-	EnableAllEventUpload  bool       `json:"enable_all_event_upload" toml:"enable_all_event_upload"`
+	UploadLogsURL         string     `json:"upload_logs_url,omitempty" toml:"upload_logs_url,omitempty"`
+	AllowedPathRegex      string     `json:"allowed_path_regex" toml:"allowed_path_regex"`
+	BlockedPathRegex      string     `json:"blocked_path_regex" toml:"blocked_path_regex"`
+	FullSyncInterval      int        `json:"full_sync_interval" toml:"full_sync_interval"`
 	EnableBundles         bool       `json:"enable_bundles" toml:"enable_bundles"`
 	EnableTransitiveRules bool       `json:"enable_transitive_rules" toml:"enable_transitive_rules"`
-	CleanSync             bool       `json:"clean_sync" toml:"clean_sync,omitempty"`
-	FullSyncInterval      int        `json:"full_sync_interval" toml:"full_sync_interval"`
-	// TODO: add support for sync_type and deprecate clean_sync
-	//	SyncType                 string     `json:"sync_type" toml:"sync_type,omitempty"`
-	// TODO: add in support for the following fields
-	//	BlockUSBMount            bool   `json:"block_usb_mount" toml:"block_usb_mount,omitempty"`
-	//	RemountUSBMode           string `json:"remount_usb_mode" toml:"remount_usb_mode,omitempty"`
-	//	OverrideFileAccessAction string `json:"override_file_access_action" toml:"override_file_access_action,omitempty"`
+	EnableAllEventUpload  bool       `json:"enable_all_event_upload" toml:"enable_all_event_upload"`
+	BlockUsbMount         bool       `json:"block_usb_mount" toml:"block_usb_mount"`
+	RemountUSBMode        string     `json:"remount_usb_mode" toml:"remount_usb_mode"`
 }
 
 // A PreflightPayload represents the request sent by a santa client to the sync server.
-// https://github.com/google/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#preflight-request
+// https://github.com/northpolesec/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#preflight-request
 type PreflightPayload struct {
 	SerialNumber         string     `json:"serial_num"`
 	Hostname             string     `json:"hostname"`
@@ -66,6 +67,7 @@ type PreflightPayload struct {
 	CdHashRuleCount      int        `json:"cdhash_rule_count"`
 	ClientMode           ClientMode `json:"client_mode"`
 	RequestCleanSync     bool       `json:"request_clean_sync"`
+	CleanSync            bool       `json:"clean_sync"`
 }
 
 // Postflight represents sync response sent to a Santa client by the sync server.
@@ -75,7 +77,7 @@ type Postflight struct {
 }
 
 // A PostflightPayload represents the request sent by a santa client to the sync server.
-// https://github.com/google/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#postflight-request
+// https://github.com/northpolesec/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#postflight-request
 type PostflightPayload struct {
 	RulesReceived  int `json:"rules_received"`
 	RulesProcessed int `json:"rules_processed"`
@@ -83,9 +85,9 @@ type PostflightPayload struct {
 
 // EventPayload represents derived metadata for events uploaded with the UploadEvent endpoint.
 type EventPayload struct {
-	FileSHA   string  `json:"file_sha256"`
-	UnixTime  float64 `json:"execution_time"`
-	EventInfo EventUploadEvent
+	FileSHA  string          `json:"file_sha256"`
+	UnixTime float64         `json:"execution_time"`
+	Content  json.RawMessage `json:"-"`
 }
 
 // EventUploadRequest encapsulation of an /eventupload POST body sent by a Santa client
@@ -94,7 +96,7 @@ type EventUploadRequest struct {
 }
 
 // EventUploadEvent is a single event entry
-// https://github.com/google/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#event-objects
+// https://github.com/northpolesec/santa/blob/344a35aaf63c24a56f7a021ce18ecab090584da3/docs/development/sync-protocol.md#event-objects
 type EventUploadEvent struct {
 	CurrentSessions              []string       `json:"current_sessions"`
 	Decision                     string         `json:"decision"`
@@ -208,7 +210,8 @@ func (r RuleType) MarshalText() ([]byte, error) {
 type Policy int
 
 const (
-	Blocklist Policy = iota
+	Blocklist       Policy = iota
+	SilentBlocklist Policy = iota
 	Allowlist
 
 	// AllowlistCompiler is a Transitive allowlist policy which allows allowlisting binaries created by
@@ -221,6 +224,8 @@ func (p *Policy) UnmarshalText(text []byte) error {
 	switch t := string(text); t {
 	case "BLOCKLIST":
 		*p = Blocklist
+	case "SILENT_BLOCKLIST":
+		*p = SilentBlocklist
 	case "ALLOWLIST":
 		*p = Allowlist
 	case "ALLOWLIST_COMPILER":
@@ -237,6 +242,8 @@ func (p Policy) MarshalText() ([]byte, error) {
 	switch p {
 	case Blocklist:
 		return []byte("BLOCKLIST"), nil
+	case SilentBlocklist:
+		return []byte("SILENT_BLOCKLIST"), nil
 	case Allowlist:
 		return []byte("ALLOWLIST"), nil
 	case AllowlistCompiler:

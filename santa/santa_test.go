@@ -9,10 +9,14 @@ import (
 )
 
 func TestConfigMarshalUnmarshal(t *testing.T) {
-	conf := testConfig(t, "testdata/config_a_toml.golden", (os.Getenv("REPLACE_GOLDEN") == "TRUE"))
+	conf := testConfig(t, "testdata/config_a.golden.toml", (os.Getenv("REPLACE_GOLDEN") == "TRUE"))
 
 	if have, want := conf.ClientMode, Lockdown; have != want {
 		t.Errorf("have client_mode %d, want %d\n", have, want)
+	}
+
+	if have, want := conf.CleanSync, true; have != want {
+		t.Errorf("have clean_sync %t, want %t\n", have, want)
 	}
 
 	if have, want := conf.FullSyncInterval, 600; have != want {
@@ -26,42 +30,62 @@ func TestConfigMarshalUnmarshal(t *testing.T) {
 	if have, want := conf.Rules[0].RuleType, Binary; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
-
-	if have, want := conf.Rules[1].RuleType, Certificate; have != want {
-		t.Errorf("have rule_type %d, want %d\n", have, want)
+	if have, want := conf.Rules[0].Policy, Blocklist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[2].RuleType, TeamID; have != want {
-		t.Errorf("have rule_tpe %d, want %d\n", have, want)
+	if have, want := conf.Rules[1].RuleType, TeamID; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[1].Policy, Allowlist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
+	}
+
+	if have, want := conf.Rules[2].RuleType, SigningID; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[2].Policy, Allowlist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
 	if have, want := conf.Rules[3].RuleType, SigningID; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
+	if have, want := conf.Rules[3].Policy, Blocklist; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
+	}
 
-	if have, want := conf.Rules[4].RuleType, CdHash; have != want {
+	if have, want := conf.Rules[4].RuleType, Binary; have != want {
 		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
-
-	if have, want := conf.Rules[0].Policy, Blocklist; have != want {
+	if have, want := conf.Rules[4].Policy, AllowlistCompiler; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[1].Policy, Allowlist; have != want {
-		t.Errorf("have policy %d, want %d\n", have, want)
+	if have, want := conf.Rules[5].RuleType, Binary; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
 	}
-
 	if have, want := conf.Rules[5].Policy, AllowlistCompiler; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[6].Policy, Remove; have != want {
+	if have, want := conf.Rules[6].RuleType, Binary; have != want {
+		t.Errorf("have rule_type %d, want %d\n", have, want)
+	}
+	if have, want := conf.Rules[6].Policy, AllowlistCompiler; have != want {
 		t.Errorf("have policy %d, want %d\n", have, want)
 	}
 
-	if have, want := conf.Rules[10].CustomUrl, "https://go.dev"; have != want {
-		t.Errorf("have custom_url %s, want %s\n", have, want)
+	if have, want := conf.Rules[7].Policy, AllowlistCompiler; have != want {
+		t.Errorf("have policy %d, want %d\n", have, want)
 	}
+	if have, want := conf.Rules[7].Identifier, "d867fca68bbd7db18e9ced231800e7535bc067852b1e530987bb7f57b5e3a02c"; have != want {
+		t.Errorf("have identifier %s, want %s\n", have, want)
+	}
+	if have, want := conf.Rules[7].CustomMessage, "allowlist go compiler component"; have != want {
+		t.Errorf("have Custom Message %s, want %s\n", have, want)
+	}
+
 }
 
 func testConfig(t *testing.T, path string, replace bool) Config {

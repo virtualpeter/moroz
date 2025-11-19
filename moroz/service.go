@@ -2,10 +2,12 @@ package moroz
 
 import (
 	"context"
+	"os"
 	"time"
 
+	"moroz/santa"
+
 	"github.com/go-kit/kit/endpoint"
-	"github.com/groob/moroz/santa"
 )
 
 type ConfigStore interface {
@@ -18,9 +20,11 @@ type SantaService struct {
 	repo            ConfigStore
 	eventDir        string
 	flPersistEvents bool
+	streamEvents    bool
+	eventLogHandle  *os.File
 }
 
-func NewService(ds ConfigStore, eventDir string, flPersistEvents bool) (*SantaService, error) {
+func NewService(ds ConfigStore, eventDir string, flPersistEvents bool, streamEvents bool, eventLogHandle *os.File) (*SantaService, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	global, err := ds.Config(ctx, "global")
@@ -32,6 +36,8 @@ func NewService(ds ConfigStore, eventDir string, flPersistEvents bool) (*SantaSe
 		repo:            ds,
 		eventDir:        eventDir,
 		flPersistEvents: flPersistEvents,
+		streamEvents:    streamEvents,
+		eventLogHandle:  eventLogHandle,
 	}, nil
 }
 
